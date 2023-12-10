@@ -13,6 +13,12 @@
 
 OpenthermData message;
 
+// override the maximum CH setpoint reported by the boiler to the thermostat
+#define MAX_CH_SETPOINT_OVERRIDE 70
+
+// override the maximum modulation level written to the boiler from the thermostat
+#define MAX_MODULATION_LEVEL_OVERRIDE 75
+
 // Set the LCD address to 0x27 for a 16 chars and 2 line display
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
@@ -220,9 +226,9 @@ void loop() {
         message.valueHB &= mask;
       }
 
-      /* cap maximum modulation level at 66% */
+      /* override the maximum modulation level set by the thermostat into the boiler */
       if(message.type == OT_MSGTYPE_WRITE_DATA && message.id == OT_MSGID_MAX_MODULATION_LEVEL) {
-        message.valueHB = 66;
+        message.valueHB = MAX_MODULATION_LEVEL_OVERRIDE;
       }
 
       Serial.print(F("-> "));
@@ -254,9 +260,9 @@ void loop() {
         max_modulation_level = message.valueHB;
 
       /* CH max setpoint */
-      /* MITM modification of boiler->thermostat data */
+      /* override the max CH setpoint reported by the boiler to the thermostat */
       if(message.type == OT_MSGTYPE_READ_ACK && message.id == OT_MSGID_MAX_CH_SETPOINT) {
-        message.valueHB = 60;
+        message.valueHB = MAX_CH_SETPOINT_OVERRIDE;
         max_ch_setpoint = message.valueHB;
       }
 
